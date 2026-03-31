@@ -9,5 +9,4 @@ public class PicpaySimplifiedApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PicpaySimplifiedApplication.class, args);
 	}
-
 }
