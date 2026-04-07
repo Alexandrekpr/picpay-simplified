@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import com.alexandrekpr.picpay_simplified.domain.user.User;
 import com.alexandrekpr.picpay_simplified.domain.user.UserType;
 import com.alexandrekpr.picpay_simplified.dtos.UserDTO;
+import com.alexandrekpr.picpay_simplified.exceptions.EntityNotFoundException;
+import com.alexandrekpr.picpay_simplified.exceptions.ForbiddenException;
+import com.alexandrekpr.picpay_simplified.exceptions.InsufficientFundsException;
 import com.alexandrekpr.picpay_simplified.repositories.UserRepository;
 
 @Service
@@ -16,20 +19,20 @@ public class UserService {
   @Autowired
   private UserRepository userRepository;
 
-  public void validateTransaction(User sender, BigDecimal amount) throws Exception {
+  public void validateTransaction(User sender, BigDecimal amount) throws ForbiddenException, InsufficientFundsException {
     if (sender.getType() == UserType.MERCHANT) {
-      throw new Exception("Merchants cannot send money.");
+      throw new ForbiddenException();
     }
 
     if (sender.getBalance().compareTo(amount) < 0) {
-      throw new Exception("Insufficient balance.");
+      throw new InsufficientFundsException("Insufficient funds.");
     }
   }
 
-  public User findById(Long id) throws Exception {
+  public User findById(Long id) throws EntityNotFoundException {
     return userRepository
     .findUserById(id)
-    .orElseThrow(() -> new Exception("User not found."));
+    .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
   }
 
   public User createUser(UserDTO data) {
