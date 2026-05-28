@@ -24,8 +24,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id")
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class Transaction {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

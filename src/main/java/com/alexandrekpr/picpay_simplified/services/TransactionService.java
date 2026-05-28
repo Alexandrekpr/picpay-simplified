@@ -1,40 +1,24 @@
 package com.alexandrekpr.picpay_simplified.services;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import com.alexandrekpr.picpay_simplified.domain.transaction.Transaction;
 import com.alexandrekpr.picpay_simplified.domain.user.User;
-import com.alexandrekpr.picpay_simplified.dtos.AuthResponse;
 import com.alexandrekpr.picpay_simplified.dtos.TransactionDTO;
-import com.alexandrekpr.picpay_simplified.exceptions.ExternalApiException;
 import com.alexandrekpr.picpay_simplified.exceptions.ForbiddenException;
 import com.alexandrekpr.picpay_simplified.repositories.TransactionRepository;
+import com.alexandrekpr.picpay_simplified.domain.transaction.Transaction;
 
 @Service
+@RequiredArgsConstructor
 public class TransactionService {
-
     private final UserService userService;
     private final NotificationService notificationService;
     private final TransactionRepository transactionRepository;
-    private final RestTemplate restTemplate;
-
-    public TransactionService(
-      UserService userService, 
-        NotificationService notificationService, 
-        TransactionRepository transactionRepository, 
-        RestTemplate restTemplate
-      ) {
-        this.userService = userService;
-        this.notificationService = notificationService;
-        this.transactionRepository = transactionRepository;
-        this.restTemplate = restTemplate;
-    }
+    private final AuthenticateService authService;
 
   @Transactional
   public Transaction createTransaction(TransactionDTO transaction) throws Exception {
@@ -43,7 +27,7 @@ public class TransactionService {
     
     userService.validateTransaction(sender, transaction.value());
     
-    boolean isAuthenticated = authenticateTransaction(sender, transaction.value());
+    boolean isAuthenticated = this.authService.authenticateTransaction(sender, transaction.value());
     if (!isAuthenticated) {
       throw new ForbiddenException();
     }
@@ -65,26 +49,4 @@ public class TransactionService {
 
     return newTransaction;
 }
-
-public boolean authenticateTransaction(User sender, BigDecimal amount) throws ExternalApiException {
-    ResponseEntity<AuthResponse> response = restTemplate.getForEntity(
-          "https://util.devi.tools/api/v2/authorize", 
-          AuthResponse.class
-    );
-
-    System.err.println("Resposta da API de autenticação: " + response);
-
-    if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-      String status = response.getBody().status();
-      boolean isAuthorized = response.getBody().data().authorization();
-      
-      if ("fail".equalsIgnoreCase(status) || !isAuthorized) {
-            throw new ForbiddenException();
-      }
-      
-      return true;
-    }
-
-    return false;
-  }
 }

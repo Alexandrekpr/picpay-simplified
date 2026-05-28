@@ -2,7 +2,7 @@ package com.alexandrekpr.picpay_simplified.domain.user;
 
 import java.math.BigDecimal;
 
-import com.alexandrekpr.picpay_simplified.dtos.UserDTO;
+import com.alexandrekpr.picpay_simplified.dtos.UserRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,7 +41,7 @@ public class User {
   @Enumerated(EnumType.STRING)
   private UserType type;
 
-  public User(UserDTO data) {
+  public User(UserRequest data) {
     this.name = data.name();
     this.document = data.document();
     this.email = data.email();

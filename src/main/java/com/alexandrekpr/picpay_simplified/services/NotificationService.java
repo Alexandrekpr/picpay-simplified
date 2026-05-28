@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.alexandrekpr.picpay_simplified.domain.user.User;
-import com.alexandrekpr.picpay_simplified.dtos.NotificationDTO;
+import com.alexandrekpr.picpay_simplified.dtos.Notification;
 
 @Service
 public class NotificationService {
@@ -15,7 +15,7 @@ public class NotificationService {
 
   public void sendNotification(User user, String message) throws Exception {
     String mail = user.getEmail();
-    NotificationDTO notificationRequest = new NotificationDTO(mail, message);
+    Notification notificationRequest = new Notification(mail, message);
 
     try {
       ResponseEntity<String> response = restTemplate.postForEntity("https://util.devi.tools/api/v1/notify", notificationRequest, String.class);

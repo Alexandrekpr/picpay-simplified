@@ -7,20 +7,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alexandrekpr.picpay_simplified.domain.transaction.Transaction;
 import com.alexandrekpr.picpay_simplified.dtos.TransactionDTO;
+import com.alexandrekpr.picpay_simplified.domain.transaction.Transaction;
 import com.alexandrekpr.picpay_simplified.services.TransactionService;
 
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
 
-  @Autowired
-  private TransactionService transactionService;
+  private final TransactionService transactionService;
+
+  public TransactionController (TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
   @PostMapping
   public ResponseEntity<Transaction> createTransaction(@RequestBody TransactionDTO transaction) throws Exception {
-    Transaction createdTransaction = this.transactionService.createTransaction(transaction);
+    com.alexandrekpr.picpay_simplified.domain.transaction.Transaction createdTransaction = this.transactionService.createTransaction(transaction);
     return ResponseEntity.ok(createdTransaction);
   }
 }

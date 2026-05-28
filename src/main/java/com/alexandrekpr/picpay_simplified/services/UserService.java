@@ -2,16 +2,20 @@ package com.alexandrekpr.picpay_simplified.services;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
+import com.alexandrekpr.picpay_simplified.dtos.PaginatedResponse;
+import com.alexandrekpr.picpay_simplified.dtos.UserResponse;
+import com.alexandrekpr.picpay_simplified.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.alexandrekpr.picpay_simplified.domain.user.User;
 import com.alexandrekpr.picpay_simplified.domain.user.UserType;
-import com.alexandrekpr.picpay_simplified.dtos.UserDTO;
-import com.alexandrekpr.picpay_simplified.exceptions.EntityNotFoundException;
-import com.alexandrekpr.picpay_simplified.exceptions.ForbiddenException;
-import com.alexandrekpr.picpay_simplified.exceptions.InsufficientFundsException;
+import com.alexandrekpr.picpay_simplified.dtos.UserRequest;
 import com.alexandrekpr.picpay_simplified.repositories.UserRepository;
 
 @Service
@@ -29,19 +33,25 @@ public class UserService {
     }
   }
 
-  public User findById(Long id) throws EntityNotFoundException {
+  public User findById(Long id) throws NotFoundException {
     return userRepository
     .findUserById(id)
-    .orElseThrow(() -> new EntityNotFoundException("User with id " + id + " not found"));
+    .orElseThrow(() -> new NotFoundException("User with id " + id + " not found"));
   }
 
-  public User createUser(UserDTO data) {
-    User newUser = new User(data);
-    return userRepository.save(newUser);
+  public UserResponse createUser(UserRequest data) {
+    boolean userExists = userRepository.existsUserByEmail(data.email());
+    if (userExists) {
+      throw new BadRequestException("User already exists");
+    }
+
+    User user = data.toEntity();
+    User newUser = userRepository.save(user);
+    return UserResponse.fromEntity(newUser);
   }
 
-  public List<User> getAllUsers() {
-    return userRepository.findAll();
+  public Page<UserResponse> getAllUsers(Pageable pageable) {
+    return userRepository.findAll(pageable).map(UserResponse::fromEntity);
   }
 
   public void saveUser(User user) {
